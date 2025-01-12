@@ -6,14 +6,15 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "3000:80"
+      - "3030:80"
+    restart: always
   
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
     ports:
-      - "5000:5000"
+      - "5050:5000"
     volumes:
       - ./backend:/app
       - ./data:/app/data
