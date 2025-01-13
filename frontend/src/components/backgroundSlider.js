@@ -51,8 +51,22 @@ const BackgroundSlider = () => {
           'Scarface', 'The Breakfast Club', 'The Princess Bride', 'The Big Lebowski',
           'The Usual Suspects', 'American Beauty', 'Memento', 'Eternal Sunshine of the Spotless Mind',
           'No Country for Old Men', 'There Will Be Blood', 'The Hurt Locker',
-          'Inglourious Basterds', 'Django Unchained'
+          'Inglourious Basterds', 'Django Unchained', 'Gone with the Wind',
+          'The Wizard of Oz', 'The Sound of Music', 'The Graduate',
+          'One Flew Over the Cuckoo\'s Nest', 'Rocky', 'Annie Hall', 'The Deer Hunter',
+          'Raiders of the Lost Ark', 'The Empire Strikes Back', 'The Return of the Jedi',
+          'The Fellowship of the Ring', 'The Two Towers', 'The Return of the King',
+          'Braveheart', 'The Revenant', 'La La Land', 'Mad Max: Fury Road',
+          'The Grand Budapest Hotel', 'The Shape of Water', 'Moonlight',
+          'Spotlight', 'Birdman', '12 Years a Slave', 'Argo',
+          'The Artist', 'The King\'s Speech', 'Slumdog Millionaire',
+          'The Dark Knight Rises', 'The Wolf of Wall Street', 'The Martian',
+          'The Revenant', 'The Shape of Water', 'The Grand Budapest Hotel',
+          'The Imitation Game', 'The Theory of Everything', 'The Danish Girl',
+          'The Hateful Eight', 'The Big Short', 'The Jungle Book',
+          'The BFG', 'The Light Between Oceans', 'The Girl on the Train'
         ];
+                
 
         const moviePromises = movieTitles.map(async (title) => {
           const response = await fetch(

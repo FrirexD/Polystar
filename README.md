@@ -16,29 +16,20 @@ PolyStar est une application web interactive permettant aux utilisateurs de se p
 ## Technologies Utilisées
 ### Backend
 - **Python** avec **Flask** pour la gestion des API et du backend.
-- **TensorFlow** ou **PyTorch** pour les modèles de machine learning.
-- **OpenCV** et **PIL** pour le traitement d’images.
 
 ### Frontend
 - **React.js** pour l’interface utilisateur dynamique.
 - **CSS** pour le design et la mise en page.
 
-### Base de Données
-- **SQLite** pour la gestion des données utilisateurs.
-
 ### Conteneurisation
 - **Docker** pour isoler l'environnement de développement et de production.
-
-### Modèles Utilisés
-- **FaceNet** ou **ArcFace** pour la comparaison de visages.
-- **StyleGAN** ou **modèle de diffusion** pour la génération d'images.
 
 ---
 
 ## Prérequis
 - Python 3.9+
 - Node.js 14+
-- Docker (optionnel pour la conteneurisation)
+- Docker 
 
 ---
 
@@ -50,31 +41,12 @@ PolyStar est une application web interactive permettant aux utilisateurs de se p
    cd polystar
    ```
 
-2. Installez les dépendances backend :
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   ```
+Lancer l'applcation :
+```bash
+docker-compose up --build
+```
 
-3. Installez les dépendances frontend :
-   ```bash
-   cd ../frontend
-   npm install
-   ```
-
-4. Lancez le serveur Flask :
-   ```bash
-   cd ../backend
-   python app.py
-   ```
-
-5. Lancez le serveur React :
-   ```bash
-   cd ../frontend
-   npm start
-   ```
-
-6. Accédez à l’application sur : [http://localhost:3000](http://localhost:3000)
+2. Accédez à l’application sur : [http://localhost:3000](http://localhost:3000)
 
 ---
 

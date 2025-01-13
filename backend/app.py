@@ -4,14 +4,14 @@ import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-CORS(app)  # Pour permettre les requêtes cross-origin depuis le frontend React
+CORS(app)  
 
-# Configuration
+
 app.config['UPLOAD_FOLDER'] = './static/uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limite de 16MB pour les uploads
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-# Créer le dossier d'uploads s'il n'existe pas
+
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def allowed_file(filename):
