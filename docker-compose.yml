@@ -18,3 +18,13 @@ services:
     volumes:
       - ./backend:/app
       - ./data:/app/data
+
+  face-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.faceapp
+    volumes:
+      - ./data:/face-app/data
+    ports:
+      - "6000:6000"
+    restart: always

@@ -1,0 +1,24 @@
+# Utiliser une image Python adaptée
+FROM python:3.9-slim
+
+# Installer les outils système nécessaires pour insightface
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libgl1 \
+    libglib2.0-0 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Définir le dossier de travail
+WORKDIR /insightface_app
+
+# Copier uniquement un fichier temporaire pour installer insightface
+RUN pip install --no-cache-dir insightface
+
+# Copier les scripts d'exemple ou outils spécifiques (si nécessaire)
+# COPY ./tools ./tools
+
+# Exposer les ports ou commandes nécessaires si insightface est utilisé dans une API
+EXPOSE 6000
+
+# Commande par défaut (peut être personnalisée)
+CMD ["python", "-c", "import insightface; print('InsightFace prêt !')"]
