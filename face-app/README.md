@@ -13,4 +13,7 @@ The file **inswapper_128.onnx** shall be manually downloaded and placed in the *
 https://www.reddit.com/r/midjourney/comments/13pnraj/please_reupload_inswapper_128onnx/?rdt=59740
 
 <br>
+
 **ALL** other **models** files are automatically fetched and downloaded from the InsightFace repo and can take some time to complete.
+
+Remember to execute **preprocess.py** script before executing **app.py** by editing the **docker-compose** file
