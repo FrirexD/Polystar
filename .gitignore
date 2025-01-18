@@ -54,3 +54,6 @@ __pypackages__/
 # Misc
 *.bak
 *.old
+
+# Ignore face-app models folder
+face-app/models/

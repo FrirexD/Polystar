@@ -20,6 +20,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copier le reste des fichiers de l'application faceapp
 COPY face-app/ .
 
+# Copier les fichiers de data (celebA et output)
+COPY data /app/data
+
+# Copier les fichiers des modèles
+COPY face-app/models/inswapper_128.onnx /root/.insightface/models/inswapper_128.onnx
+
+# Assurer les droits d'écriture pour les données
+RUN chmod -R 777 /app/data
+
 # Exposer les ports ou commandes nécessaires
 EXPOSE 6000
 

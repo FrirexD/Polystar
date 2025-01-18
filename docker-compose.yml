@@ -17,14 +17,18 @@ services:
       - "5050:5000"
     volumes:
       - ./backend:/app
-      - ./data:/app/data
+      - ./backend/data:/app/data
 
   face-app:
     build:
       context: .
       dockerfile: Dockerfile.faceapp
     volumes:
-      - ./data:/face-app/data
+      - ./data/celebA:/app/data/celebA
+      - ./data/output:/app/data/output
+      - ./data/samples:/app/data/samples
+      - ./data/preprocessed:/app/data/preprocessed
+      - ./face-app/models:/root/.insightface/models  # Volume pour persister le modèle téléchargé dans face-app/models
     ports:
       - "6000:6000"
-    restart: always
+    restart: no
