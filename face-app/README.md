@@ -7,4 +7,10 @@ Once the repo is cloned, executing this command should create a folder in **face
 docker-compose up --build
 ```
 
-The file **
+The file **inswapper_128.onnx** shall be manually downloaded and placed in the **models** folder.
+
+**inswapper_128.onnx** Download link :
+https://www.reddit.com/r/midjourney/comments/13pnraj/please_reupload_inswapper_128onnx/?rdt=59740
+
+<br>
+**ALL** other **models** files are automatically fetched and downloaded from the InsightFace repo and can take some time to complete.
