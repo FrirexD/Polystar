@@ -163,7 +163,7 @@ def main():
     initialize_face_analyzer()
 
     # Reading source image
-    source_image_path = SAMPLES_DIR+"Renan1.JPG"
+    source_image_path = SAMPLES_DIR+"Renan2.JPG"
     source_embedding = extract_embedding(source_image_path, app)
 
     comparing_image_path = SAMPLES_DIR+"Renan2.JPG"
