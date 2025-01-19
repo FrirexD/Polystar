@@ -2,10 +2,12 @@ import os
 import cv2 as cv
 import numpy as np
 from insightface.app import FaceAnalysis
+from zipfile import ZipFile
 import pickle
 from progress.bar import Bar
 from constants import *
-import csv
+import shutil
+import random
 
 def initialize_face_analyzer() -> FaceAnalysis:
     """
@@ -17,10 +19,54 @@ def initialize_face_analyzer() -> FaceAnalysis:
     return face_analyzer
 
 
+def copy_random_images(source_folder: str = DATA_DIR+"img_align_celeba", destination_folder: str = DATA_DIR+"celebA", max_images: int = 1000):
+    """
+    Copies up to `max_images` random images from the source folder to the destination folder.
+    Clears the destination folder before copying.
+
+    Args:
+        source_folder: Path to the source folder containing images.
+        destination_folder: Path to the destination folder where images will be copied.
+        max_images: Maximum number of images to copy.
+    """
+    # Ensure the destination folder exists
+    if not os.path.exists(destination_folder):
+        os.makedirs(destination_folder)
+    else:
+        # Clear the destination folder
+        for filename in os.listdir(destination_folder):
+            file_path = os.path.join(destination_folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f'Failed to delete {file_path}. Reason: {e}')
+
+    # List all valid image files in the source folder
+    image_files = [
+        f for f in os.listdir(source_folder)
+        if f.lower().endswith(('.png', '.jpg', '.jpeg'))
+    ]
+
+    # Shuffle the list of image files
+    random.shuffle(image_files)
+
+    print("Copying random images...")
+    # Copy up to `max_images` files
+    for i, image_file in enumerate(image_files):
+        if i >= max_images:
+            break
+        source_path = os.path.join(source_folder, image_file)
+        destination_path = os.path.join(destination_folder, image_file)
+        shutil.copy2(source_path, destination_path)
+        print(f"Copied {image_file} to {destination_folder+'/'+image_file}")
+
 def preprocess_folder(folder_path: str = CELEBA_DIR, embedding_file: str = PREPOC_DIR, batch_size: int = DEFAULT_BATCH_SIZE, app : FaceAnalysis = None):
     """
     Preprocess all images in the folder to extract embeddings and store them in file.
-    
+
     Args:
         folder_path: Path to the folder containing images.
         embedding_file: Path to save the embeddings and metadata.
@@ -38,9 +84,11 @@ def preprocess_folder(folder_path: str = CELEBA_DIR, embedding_file: str = PREPO
     ]
 
     # Initialize the progress bar
-    bar = Bar('Processing Images', max=len(image_files))
+    
 
+    print("Getting face embeddings...")
     # Process images in batches
+    bar = Bar('Processing Images', max=len(image_files))
     for i in range(0, len(image_files), batch_size):
         batch = image_files[i:i + batch_size]
         
@@ -94,5 +142,6 @@ def get_face_embedding(face_analyzer : FaceAnalysis, image_path : str = CELEBA_D
     return face.embedding, face.bbox
 
 # Run the function
+copy_random_images(max_images=200)
 app = initialize_face_analyzer()
 preprocess_folder(CELEBA_DIR, PREPOC_DIR+"embeddings.pk1", DEFAULT_BATCH_SIZE, app)

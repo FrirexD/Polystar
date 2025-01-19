@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3030:80"
+    restart: "always"
+  
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "5050:5000"
+    volumes:
+      - ./backend:/app
+      - ./backend/data:/app/data
+
+  face-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.faceapp-app
+    volumes:
+      - ./data/celebA:/app/data/celebA
+      - ./data/output:/app/data/output
+      - ./data/samples:/app/data/samples
+      - ./data/preprocessed:/app/data/preprocessed
+      - ./face-app/models:/root/.insightface/models  # Volume pour persister le modèle téléchargé dans face-app/models
+    ports:
+      - "6000:6000"
+    restart: "no"

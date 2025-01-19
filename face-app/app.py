@@ -40,22 +40,21 @@ def calculate_similarity(embedding1, embedding2) -> float:
 
 def find_best_match(source_embedding, matching_embeddings_path = PREPOC_DIR+"embeddings.pk1") -> tuple:
     """
-    ### Compare source face with all faces of a folder and determine the best match
+    ### Compares source face with all faces of a folder and determines the best match
     
     Args:
         source_embedding: Embedding of source image
         matching_embeddings_path: Path to pk1 file of all embeddings to compare
         
     Returns:
-        tuple: (index of image, similarity score)
+        tuple: (path of best match, similarity score)
     """
-    best_match = 0.0
-    i = 0
-    index = 0
+    best_match_score = 0.0
+    best_match_path = ""
 
     if source_embedding is None:
         print("Could not find face on source embedding")
-        return 0, best_match
+        return "", best_match_score
     
     print("Finding best match...")
     # Load the embeddings and metadata from the pickle file
@@ -67,16 +66,16 @@ def find_best_match(source_embedding, matching_embeddings_path = PREPOC_DIR+"emb
     
     # Calculate similarity
     for i, (embedding, path) in enumerate (zip(embeddings_array, metadata)):
-        similarity = calculate_similarity(source_embedding, embedding)
-        print(f"sim {similarity}, ind : {i}, path :{path}")
+        score = calculate_similarity(source_embedding, embedding)
+        print(f"sim {score}, ind : {i}, path :{path}")
 
         # Find index and score of best matching image
-        if(similarity > best_match):
-            best_match = similarity
-            index = i
+        if(score > best_match_score):
+            best_match_score = score
+            best_match_path = path
         i+=1
     
-    return index+1, best_match
+    return best_match_path, best_match_score
 
 def visualize_match(image_path1 :str = CELEBA_DIR+"000001.jpg", image_path2 : str = CELEBA_DIR+"000002.jpg", similarity : float = 0.) -> np.ndarray:
     """
@@ -164,12 +163,16 @@ def main():
     initialize_face_analyzer()
 
     # Reading source image
-    source_image_path = SAMPLES_DIR+"Renan2.JPG"
-    source_embedding = extract_embedding(SAMPLES_DIR+"Renan2.JPG", app)
+    source_image_path = SAMPLES_DIR+"Renan1.JPG"
+    source_embedding = extract_embedding(source_image_path, app)
+
+    comparing_image_path = SAMPLES_DIR+"Renan2.JPG"
+    compare_embedding = extract_embedding(comparing_image_path, app)
+    compared_images = visualize_match(source_image_path, comparing_image_path, calculate_similarity(source_embedding, compare_embedding))
+    cv.imwrite(OUTPUT_DIR+"matching_samples.jpg",compared_images)
 
     # Find best score of matching star with source
-    ind_img, score = find_best_match(source_embedding)
-    matching_image_path = CELEBA_DIR+format_number(ind_img)
+    matching_image_path, score = find_best_match(source_embedding)
 
     # Visualize score with images side by side
     score_img = visualize_match(source_image_path, matching_image_path, score)

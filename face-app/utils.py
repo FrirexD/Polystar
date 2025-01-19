@@ -76,8 +76,8 @@ def extract_embedding(image_path: str, app):
         print("No face detected!")
         return None
 
-    # Get the first detected face if multiple
-    face = faces[0]
+    # Get the largest detected face if multiple
+    face = max(faces, key=lambda face: (face.bbox[2] - face.bbox[0]) * (face.bbox[3] - face.bbox[1]))
     
     # Return the embedding (which is in 'embedding' field)
     return face.embedding

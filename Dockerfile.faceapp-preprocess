@@ -1,0 +1,40 @@
+# Utiliser une image Python adaptée
+FROM python:3.9-slim
+
+# Installer les outils système nécessaires pour les dépendances Python
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libgl1 \
+    libglib2.0-0 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Définir le dossier de travail
+WORKDIR /app
+
+# Copier le fichier requirements.txt spécifique à faceapp
+COPY face-app/requirements.txt .
+
+# Installer les dépendances Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copier le reste des fichiers de l'application faceapp
+COPY face-app/ .
+
+# Copier les fichiers de data (celebA et output et preprocess)
+COPY data/ /app/data/
+
+# Copier les fichiers des modèles
+COPY face-app/models/inswapper_128.onnx /root/.insightface/models/inswapper_128.onnx
+
+# Assurer les droits d'écriture pour les données
+RUN chmod -R 777 /app/data/celebA
+RUN chmod -R 777 /app/data/output
+RUN chmod -R 777 /app/data/preprocessed
+RUN chmod -R 777 /app/data/samples
+
+
+# Exposer les ports ou commandes nécessaires
+EXPOSE 6000
+
+# Commande par défaut pour démarrer l'application Python
+CMD ["python", "preprocess.py"]
