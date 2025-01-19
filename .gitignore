@@ -58,4 +58,4 @@ __pypackages__/
 *.zip
 
 # Ignore face-app models folder
-#face-app/models/
+data/img_align_celeba
