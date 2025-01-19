@@ -43,7 +43,7 @@ PolyStar est une application web interactive permettant aux utilisateurs de se p
 
 Lancer l'applcation :
 ```bash
-docker-compose up --build
+docker-compose -f docker-compose-app up --build
 ```
 
 2. Accédez à l’application sur : [http://localhost:3000](http://localhost:3000)
