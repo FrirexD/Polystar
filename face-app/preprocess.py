@@ -11,13 +11,13 @@ import random
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 
-def initialize_face_analyzer() -> FaceAnalysis:
+def initialize_face_analyzer(device: str = 'cuda:0') -> FaceAnalysis:
     """
     ### Initialize the InsightFace face analyzer in a global variable "app"
     """
     face_analyzer = FaceAnalysis()
     # Use 0 for GPU, -1 for CPU
-    face_analyzer.prepare(ctx_id=0, det_size=(640, 640))
+    face_analyzer.prepare(ctx_id=0 if device.startswith('cuda') else -1)  # 0 for GPU, -1 for CPU
     return face_analyzer
 
 
@@ -90,7 +90,6 @@ def preprocess_folder(folder_path: str = CELEBA_DIR, embedding_file: str = PREPO
 
     print("Getting face embeddings...")
     # Process images in batches
-    bar = Bar('Processing Images', max=len(image_files))
     for i in range(0, len(image_files), batch_size):
         batch = image_files[i:i + batch_size]
         
@@ -99,12 +98,10 @@ def preprocess_folder(folder_path: str = CELEBA_DIR, embedding_file: str = PREPO
             if embedding is not None:
                 embeddings.append(embedding)
                 metadata.append(image_path)
-            
-            # Update the progress bar
-            bar.next()
+
 
     # Finish the progress bar
-    bar.finish()
+
 
     # Save embeddings and metadata
     with open(embedding_file, 'wb') as f:
@@ -173,7 +170,7 @@ def preprocess_folder_gpu(
     metadata = []
 
     # Set device for FaceAnalysis
-    app.prepare(ctx_id=0 if device.startswith('cuda') else -1)  # 0 for GPU, -1 for CPU
+    initialize_face_analyzer(device)
 
     # Define thread pool for parallelism
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
@@ -194,36 +191,33 @@ def preprocess_folder_gpu(
         pickle.dump((np.array(embeddings), metadata), f)
     print(f"Embeddings saved to {embedding_file}")
 
-
 def process_images_gpu(batch, app: FaceAnalysis, device: str):
     embeddings = []
     metadata = []
 
-    # Load images into a batch tensor
-    images = []
-    valid_paths = []
     for image_path in batch:
         img = cv.imread(image_path)
         if img is None:
             print(f"Error loading image: {image_path}")
             continue
         img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        images.append(img)
-        valid_paths.append(image_path)  # Only keep valid paths
 
-    # Process the batch on the GPU
-    if images:
+        # Process the image on the GPU
         try:
-            faces_batch = app.get(np.stack(images))  # Assumes `FaceAnalysis.get` can handle batches
-            for i, faces in enumerate(faces_batch):
-                if faces:
-                    face = max(faces, key=lambda x: x.bbox[2] * x.bbox[3])
-                    embeddings.append(face.embedding)
-                    metadata.append(valid_paths[i])  # Use valid paths
+            faces = app.get(img)  # Process one image at a time
+            if faces:
+                face = max(faces, key=lambda x: x.bbox[2] * x.bbox[3])
+                embeddings.append(face.embedding)
+                metadata.append(image_path)
         except Exception as e:
-            print(f"Error processing batch: {e}")
+            print(f"Error processing image {image_path}: {e}")
 
     return embeddings, metadata
+
+def chunked(iterable, n):
+    """Utility function to split the iterable into chunks of size n."""
+    for i in range(0, len(iterable), n):
+        yield iterable[i:i + n]
 
 
 def chunked(iterable, size):
@@ -242,7 +236,7 @@ def chunked(iterable, size):
 
 
 # Run the function
-copy_random_images(max_images=100)
+copy_random_images(max_images=1000)
 app = initialize_face_analyzer()
-preprocess_folder(CELEBA_DIR, PREPOC_DIR+"embeddings.pk1", DEFAULT_BATCH_SIZE, app)
-#preprocess_folder_gpu(CELEBA_DIR, PREPOC_DIR+"embeddings.pk1",DEFAULT_BATCH_SIZE,app,4,"cuda:0")
+#preprocess_folder(CELEBA_DIR, PREPOC_DIR+"embeddings.pk1", DEFAULT_BATCH_SIZE, app)
+preprocess_folder_gpu(CELEBA_DIR, PREPOC_DIR+"embeddings.pk1",DEFAULT_BATCH_SIZE,app,4,"cuda:0")

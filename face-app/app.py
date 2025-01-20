@@ -177,6 +177,8 @@ def main():
     # Visualize score with images side by side
     score_img = visualize_match(source_image_path, matching_image_path, score)
     # Store image in output folder
+    if score_img is None:
+        print("Error while writing similarity file image, could not find any matching image")
     cv.imwrite(OUTPUT_DIR+"best_match.jpg", score_img)
     print(f"Result saved to /app/{OUTPUT_DIR}best_match.jpg")
 
