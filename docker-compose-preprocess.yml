@@ -1,24 +1,6 @@
 version: '3.8'
 
 services:
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    ports:
-      - "3030:80"
-    restart: "always"
-  
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-    ports:
-      - "5050:5000"
-    volumes:
-      - ./backend:/app
-      - ./backend/data:/app/data
-
   face-app:
     build:
       context: .

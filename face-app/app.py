@@ -139,7 +139,7 @@ def morph_faces(image_path1 : str, image_path2 : str, model : str ='buffalo_l') 
         raise ValueError("No faces detected in one or both images.")
     
     print("probleme ici ?")
-    swapper = insightface.model_zoo.get_model("inswapper_128.onnx", download = False, download_zip = False)
+    swapper = insightface.model_zoo.get_model('/root/./insightface/models/inswapper_128.onnx', download = False, download_zip = False)
 
     print("ou probleme là ?")
     # Image of user

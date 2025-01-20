@@ -8,6 +8,8 @@ from progress.bar import Bar
 from constants import *
 import shutil
 import random
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 
 def initialize_face_analyzer() -> FaceAnalysis:
     """
@@ -141,7 +143,106 @@ def get_face_embedding(face_analyzer : FaceAnalysis, image_path : str = CELEBA_D
     face = sorted(faces, key=lambda x: x.bbox[2] * x.bbox[3], reverse=True)[0]
     return face.embedding, face.bbox
 
+def preprocess_folder_gpu(
+    folder_path: str,
+    embedding_file: str,
+    batch_size: int,
+    app: FaceAnalysis,
+    num_threads: int = 4,
+    device: str = 'cuda:0'
+):
+    """
+    Preprocess all images in the folder using GPU and multithreading to extract embeddings.
+
+    Args:
+        folder_path: Path to the folder containing images.
+        embedding_file: Path to save the embeddings and metadata.
+        batch_size: Number of images to process in a batch.
+        app: Pre-initialized FaceAnalysis object with GPU support.
+        num_threads: Number of threads for parallelism.
+        device: GPU device to use for processing.
+    """
+    image_files = [
+        os.path.join(folder_path, f)
+        for f in os.listdir(folder_path)
+        if f.lower().endswith(('.png', '.jpg', '.jpeg'))
+    ]
+
+    print(f"Total images: {len(image_files)}")
+    embeddings = []
+    metadata = []
+
+    # Set device for FaceAnalysis
+    app.prepare(ctx_id=0 if device.startswith('cuda') else -1)  # 0 for GPU, -1 for CPU
+
+    # Define thread pool for parallelism
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        # Process in chunks
+        results = list(
+            tqdm(executor.map(lambda chunk: process_images_gpu(chunk, app, device),
+                              chunked(image_files, batch_size)),
+                 total=len(image_files) // batch_size)
+        )
+
+    # Collect results
+    for result in results:
+        embeddings.extend(result[0])
+        metadata.extend(result[1])
+
+    # Save to file
+    with open(embedding_file, 'wb') as f:
+        pickle.dump((np.array(embeddings), metadata), f)
+    print(f"Embeddings saved to {embedding_file}")
+
+
+def process_images_gpu(batch, app: FaceAnalysis, device: str):
+    embeddings = []
+    metadata = []
+
+    # Load images into a batch tensor
+    images = []
+    valid_paths = []
+    for image_path in batch:
+        img = cv.imread(image_path)
+        if img is None:
+            print(f"Error loading image: {image_path}")
+            continue
+        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        images.append(img)
+        valid_paths.append(image_path)  # Only keep valid paths
+
+    # Process the batch on the GPU
+    if images:
+        try:
+            faces_batch = app.get(np.stack(images))  # Assumes `FaceAnalysis.get` can handle batches
+            for i, faces in enumerate(faces_batch):
+                if faces:
+                    face = max(faces, key=lambda x: x.bbox[2] * x.bbox[3])
+                    embeddings.append(face.embedding)
+                    metadata.append(valid_paths[i])  # Use valid paths
+        except Exception as e:
+            print(f"Error processing batch: {e}")
+
+    return embeddings, metadata
+
+
+def chunked(iterable, size):
+    """
+    Yield successive n-sized chunks from the iterable.
+
+    Args:
+        iterable: Iterable to chunk.
+        size: Chunk size.
+
+    Yields:
+        Chunks of the iterable.
+    """
+    for i in range(0, len(iterable), size):
+        yield iterable[i:i + size]
+
+
 # Run the function
-copy_random_images(max_images=200)
+copy_random_images(max_images=100)
 app = initialize_face_analyzer()
 preprocess_folder(CELEBA_DIR, PREPOC_DIR+"embeddings.pk1", DEFAULT_BATCH_SIZE, app)
+#preprocess_folder_gpu(CELEBA_DIR, PREPOC_DIR+"embeddings.pk1",DEFAULT_BATCH_SIZE,app,4,"cuda:0")

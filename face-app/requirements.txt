@@ -2,3 +2,4 @@ numpy==1.21.6
 insightface==0.7.3
 onnxruntime==1.15.1
 progress==1.6
+tqdm==4.64.1
