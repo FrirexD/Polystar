@@ -21,4 +21,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    runtime: ${DOCKER_RUNTIME:-runc}  # Utilise 'nvidia' si DOCKER_RUNTIME est défini, sinon 'runc' pour CPU

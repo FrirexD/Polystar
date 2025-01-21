@@ -40,9 +40,33 @@
 
 3) ### Download all external files not cloned from the repository (list below)
 
-- The file **inswapper_128.onnx** shall be placed in the **/face-app/models/** folder. (<a href = "https://drive.google.com/file/d/1krOLgjW2tAPaqV-Bw4YALz0xT5zlb5HF/view?usp=sharing">Download link</a>)
+- The file **inswapper_128.onnx** shall be placed as followed (create the models folder if it is not created yet) (<a href = "https://drive.google.com/file/d/1krOLgjW2tAPaqV-Bw4YALz0xT5zlb5HF/view?usp=sharing">Download link</a>)
+```
+Polystar/
+├── backend/
+├── data/
+├── face-app/
+│   └── models/
+│       └── inswapper_128.onnx  <---------
+└── frontend/
+```
 
-- Put images from the celebA dataset in the project folder under the name **/data/img_align_celeba** (you may take less than all of the 200 000 files if it takes too much time) (<a href = "https://drive.google.com/file/d/0B7EVK8r0v71pZjFTYXZWM3FlRnM/view?usp=sharing&resourcekey=0-dYn9z10tMJOBAkviAcfdyQ">Download link</a>)
+- Images from the celebA dataset shall be placed as followed the project (**DO NOT change the folder name**)   (<a href = "https://drive.google.com/file/d/0B7EVK8r0v71pZjFTYXZWM3FlRnM/view?usp=sharing&resourcekey=0-dYn9z10tMJOBAkviAcfdyQ">Download link</a>)
+
+_Note_ : We advise you take less than all of the 200 000 files if you are using your personnal hardware otherwise it takes a long time
+
+```
+Polystar/
+├── backend/
+├── data/
+│   ├── celebA/
+│   ├── img_align_celeba/  <---------
+│   ├── output/
+│   ├── preprocessed/
+│   └── samples/
+├── face-app/
+└── frontend/
+```
 
 
 _Note:_ **ALL** other **models** and **libraries** are automatically fetched and downloaded from other repoitories and can take some time to complete.
