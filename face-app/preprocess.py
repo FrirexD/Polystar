@@ -2,21 +2,19 @@ import os
 import cv2 as cv
 import numpy as np
 from insightface.app import FaceAnalysis
-from zipfile import ZipFile
 import pickle
-from progress.bar import Bar
 from constants import *
 import shutil
 import random
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
+import onnxruntime as ort
 
 def initialize_face_analyzer(device: str = 'cuda:0') -> FaceAnalysis:
     """
     ### Initialize the InsightFace face analyzer in a global variable "app"
     """
     face_analyzer = FaceAnalysis()
-    # Use 0 for GPU, -1 for CPU
     face_analyzer.prepare(ctx_id=0 if device.startswith('cuda') else -1)  # 0 for GPU, -1 for CPU
     return face_analyzer
 
@@ -145,51 +143,64 @@ def preprocess_folder_gpu(
     embedding_file: str,
     batch_size: int,
     app: FaceAnalysis,
-    num_threads: int = 4,
     device: str = 'cuda:0'
 ):
     """
-    Preprocess all images in the folder using GPU and multithreading to extract embeddings.
+    Preprocess all images in the folder using GPU to extract embeddings.
 
     Args:
         folder_path: Path to the folder containing images.
         embedding_file: Path to save the embeddings and metadata.
         batch_size: Number of images to process in a batch.
         app: Pre-initialized FaceAnalysis object with GPU support.
-        num_threads: Number of threads for parallelism.
         device: GPU device to use for processing.
     """
+    # Collect all image files
     image_files = [
         os.path.join(folder_path, f)
         for f in os.listdir(folder_path)
         if f.lower().endswith(('.png', '.jpg', '.jpeg'))
     ]
 
-    print(f"Total images: {len(image_files)}")
+    print(f"Found {len(image_files)} images in {folder_path}")
     embeddings = []
     metadata = []
 
-    # Set device for FaceAnalysis
-    initialize_face_analyzer(device)
+    # Process images in batches
+    for i in tqdm(range(0, len(image_files), batch_size)):
+        batch = image_files[i:i + batch_size]
+        batch_embeddings, batch_metadata = process_images_gpu(batch, app, device)
+        
+        # Extend our results
+        embeddings.extend(batch_embeddings)
+        metadata.extend(batch_metadata)
+        
+        # Print progress information
+        print(f"Processed batch {i//batch_size + 1}/{len(image_files)//batch_size + 1}")
+        print(f"Current total embeddings: {len(embeddings)}")
 
-    # Define thread pool for parallelism
-    with ThreadPoolExecutor(max_workers=num_threads) as executor:
-        # Process in chunks
-        results = list(
-            tqdm(executor.map(lambda chunk: process_images_gpu(chunk, app, device),
-                              chunked(image_files, batch_size)),
-                 total=len(image_files) // batch_size)
-        )
+    # Verify we have results before saving
+    if len(embeddings) == 0:
+        print("Warning: No embeddings were generated!")
+        return
 
-    # Collect results
-    for result in results:
-        embeddings.extend(result[0])
-        metadata.extend(result[1])
-
-    # Save to file
-    with open(embedding_file, 'wb') as f:
-        pickle.dump((np.array(embeddings), metadata), f)
-    print(f"Embeddings saved to {embedding_file}")
+    # Convert embeddings to numpy array and save
+    try:
+        embeddings_array = np.array(embeddings)
+        print(f"Final embeddings shape: {embeddings_array.shape}")
+        
+        with open(embedding_file, 'wb') as f:
+            pickle.dump((embeddings_array, metadata), f)
+        
+        print(f"Successfully saved {len(embeddings)} embeddings to {embedding_file}")
+        
+        # Verify the save
+        with open(embedding_file, 'rb') as f:
+            loaded_emb, loaded_meta = pickle.load(f)
+            print(f"Verified save: loaded {len(loaded_emb)} embeddings")
+            
+    except Exception as e:
+        print(f"Error saving embeddings: {e}")
 
 def process_images_gpu(batch, app: FaceAnalysis, device: str):
     embeddings = []
@@ -214,12 +225,6 @@ def process_images_gpu(batch, app: FaceAnalysis, device: str):
 
     return embeddings, metadata
 
-def chunked(iterable, n):
-    """Utility function to split the iterable into chunks of size n."""
-    for i in range(0, len(iterable), n):
-        yield iterable[i:i + n]
-
-
 def chunked(iterable, size):
     """
     Yield successive n-sized chunks from the iterable.
@@ -236,7 +241,7 @@ def chunked(iterable, size):
 
 
 # Run the function
-copy_random_images(max_images=1000)
+copy_random_images(max_images=10000)
 app = initialize_face_analyzer()
 #preprocess_folder(CELEBA_DIR, PREPOC_DIR+"embeddings.pk1", DEFAULT_BATCH_SIZE, app)
-preprocess_folder_gpu(CELEBA_DIR, PREPOC_DIR+"embeddings.pk1",DEFAULT_BATCH_SIZE,app,4,"cuda:0")
+preprocess_folder_gpu(CELEBA_DIR, PREPOC_DIR+"embeddings.pk1",DEFAULT_BATCH_SIZE,app,"cuda:0")
