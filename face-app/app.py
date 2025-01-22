@@ -163,10 +163,13 @@ def main():
     initialize_face_analyzer()
 
     # Reading source image
-    source_image_path = SAMPLES_DIR+"Renan2.JPG"
+    source_image_path = SAMPLES_DIR+"famille.jpg"
     source_embedding = extract_embedding(source_image_path, app)
 
-    comparing_image_path = SAMPLES_DIR+"Renan2.JPG"
+    detected_faces_img , _= detect_and_draw_faces(source_image_path,OUTPUT_DIR, "detected_faces.jpg")
+    cv.imwrite(OUTPUT_DIR+"detected_faces.jpg",detected_faces_img)
+
+    comparing_image_path = SAMPLES_DIR+"Renan1.JPG"
     compare_embedding = extract_embedding(comparing_image_path, app)
     compared_images = visualize_match(source_image_path, comparing_image_path, calculate_similarity(source_embedding, compare_embedding))
     cv.imwrite(OUTPUT_DIR+"matching_samples.jpg",compared_images)
