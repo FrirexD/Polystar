@@ -2,9 +2,10 @@ import insightface
 import numpy as np
 import cv2 as cv
 from insightface.app import FaceAnalysis
-from utils import detect_and_draw_faces, extract_embedding, format_number
+from utils import detect_and_draw_faces, extract_embedding
 from constants import *
 import pickle
+import os
 
 
 def initialize_face_analyzer(model:str = 'buffalo_l') -> FaceAnalysis:
@@ -38,7 +39,7 @@ def calculate_similarity(embedding1, embedding2) -> float:
 
 
 
-def find_best_match(source_embedding, matching_embeddings_path = PREPOC_DIR+"embeddings.pk1") -> tuple:
+def find_best_match(source_embedding, embedding_folder_path = PREPOC_DIR) -> tuple:
     """
     ### Compares source face with all faces of a folder and determines the best match
     
@@ -51,30 +52,38 @@ def find_best_match(source_embedding, matching_embeddings_path = PREPOC_DIR+"emb
     """
     best_match_score = 0.0
     best_match_path = ""
+    batch_counter = 1
 
     if source_embedding is None:
         print("Could not find face on source embedding")
         return "", best_match_score
     
     print("Finding best match...")
-    # Load the embeddings and metadata from the pickle file
-    with open(matching_embeddings_path, 'rb') as f:
-        embeddings, metadata = pickle.load(f)
 
-    # Store the embeddings in a variable
-    embeddings_array = np.array(embeddings)
-    
-    # Calculate similarity
-    for i, (embedding, path) in enumerate (zip(embeddings_array, metadata)):
-        score = calculate_similarity(source_embedding, embedding)
-        print(f"sim {score}, ind : {i}, path :{path}")
+    # Get all the embeddings by batch
+    for matching_embedding in os.listdir(embedding_folder_path):
+        if matching_embedding.endswith("pk1"):
+            file_path = os.path.join(embedding_folder_path, matching_embedding)
 
-        # Find index and score of best matching image
-        if(score > best_match_score):
-            best_match_score = score
-            best_match_path = path
-        i+=1
+            # Load the embeddings and metadata from the pickle file
+            with open(file_path, 'rb') as f:
+                embeddings, metadata = pickle.load(f)
     
+        # Store the embeddings in a variable
+        embeddings_array = np.array(embeddings)
+        
+        # Calculate similarity for each embedding
+        for i, (embedding, path) in enumerate (zip(embeddings_array, metadata)):
+            score = calculate_similarity(source_embedding, embedding)
+            print(f"sim {score}, ind : {i}, path :{path}")
+
+            # Find index and score of best matching image
+            if(score > best_match_score):
+                best_match_score = score
+                best_match_path = path
+            i+=1
+        print(f"Treated batch {batch_counter}")
+        batch_counter += 1
     return best_match_path, best_match_score
 
 def visualize_match(image_path1 :str = CELEBA_DIR+"000001.jpg", image_path2 : str = CELEBA_DIR+"000002.jpg", similarity : float = 0.) -> np.ndarray:
@@ -181,7 +190,7 @@ def main():
     score_img = visualize_match(source_image_path, matching_image_path, score)
     # Store image in output folder
     if score_img is None:
-        print("Error while writing similarity file image, could not find any matching image")
+        print("Error while writing similarity file image")
     cv.imwrite(OUTPUT_DIR+"best_match.jpg", score_img)
     print(f"Result saved to /app/{OUTPUT_DIR}best_match.jpg")
 

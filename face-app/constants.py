@@ -9,7 +9,7 @@ OUTPUT_DIR = "./data/output/"
 CELEBA_DIR = "./data/celebA/"
 SAMPLES_DIR = "./data/samples/"
 PREPOC_DIR = "./data/preprocessed/"
-DEFAULT_BATCH_SIZE = 50
+DEFAULT_BATCH_SIZE = 100
 
 """
 # Current container directory configuration

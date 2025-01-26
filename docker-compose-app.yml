@@ -8,7 +8,6 @@ services:
     ports:
       - "3030:80"
     restart: "always"
-  
   backend:
     build:
       context: .
@@ -32,3 +31,8 @@ services:
     ports:
       - "6000:6000"
     restart: "no"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]

@@ -32,11 +32,15 @@ COPY data/ /app/data/
 # Copier les fichiers des modèles
 COPY face-app/models/inswapper_128.onnx /root/.insightface/models/inswapper_128.onnx
 
+# Créer le répertoire /app/data/tmp
+RUN mkdir -p /app/data/tmp
+
 # Assurer les droits d'écriture pour les données
 RUN chmod -R 777 /app/data/celebA
 RUN chmod -R 777 /app/data/output
 RUN chmod -R 777 /app/data/preprocessed
 RUN chmod -R 777 /app/data/samples
+RUN chmod -R 777 /app/data/tmp
 
 # Exposer les ports ou commandes nécessaires
 EXPOSE 6000
