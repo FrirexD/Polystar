@@ -39,7 +39,6 @@ def calculate_similarity(embedding1, embedding2) -> float:
     return similarity
 
 
-
 def find_best_match(source_embedding, embedding_folder_path = PREPOC_DIR) -> tuple:
     """
     ### Compares source face with all faces of a folder and determines the best match

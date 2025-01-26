@@ -18,7 +18,6 @@ def initialize_face_analyzer(device: str = 'cuda:0') -> FaceAnalysis:
     face_analyzer.prepare(ctx_id=0 if device.startswith('cuda') else -1)  # 0 for GPU, -1 for CPU
     return face_analyzer
 
-
 def copy_random_images(source_folder: str = DATA_DIR+"img_align_celeba", destination_folders: List[str] = DATA_DIR+"celebA", max_images: int = 1000):
     """
     ### Copies up to `max_images` random images from the source folder to the destination folder with the tmp folder.
@@ -107,7 +106,17 @@ def preprocess_folder(folder_path: str = CELEBA_DIR, embeddings_dir: str = PREPO
     print("Preprocessing done !")
 
 
-def process_batch(folder_path: str = DATA_DIR+"tmp/", batch_size: int = DEFAULT_BATCH_SIZE, app : FaceAnalysis = None):  
+def process_batch(folder_path: str = DATA_DIR+"tmp/", batch_size: int = DEFAULT_BATCH_SIZE, app : FaceAnalysis = None):
+    """
+    ### Gets embeddings and metadata of images in a temporary folder by batch.
+
+    #### Note : All images from the temporary folder are deleted
+
+    Args:
+        folder_path: The path of the temporary folder in which are stored images
+        batch_size: The amount of images to get embeddings.
+        app: FaceAnalysis component app.
+    """
     embeddings = []
     metadata = []
     
