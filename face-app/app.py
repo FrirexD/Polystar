@@ -6,6 +6,7 @@ from utils import detect_and_draw_faces, extract_embedding
 from constants import *
 import pickle
 import os
+from progress.bar import Bar
 
 
 def initialize_face_analyzer(model:str = 'buffalo_l') -> FaceAnalysis:
@@ -72,16 +73,19 @@ def find_best_match(source_embedding, embedding_folder_path = PREPOC_DIR) -> tup
         # Store the embeddings in a variable
         embeddings_array = np.array(embeddings)
         
+        bar = Bar(f'Processing batch nb {batch_counter}', max=DEFAULT_BATCH_SIZE)
         # Calculate similarity for each embedding
         for i, (embedding, path) in enumerate (zip(embeddings_array, metadata)):
             score = calculate_similarity(source_embedding, embedding)
-            print(f"sim {score}, ind : {i}, path :{path}")
+            bar.next()
 
             # Find index and score of best matching image
             if(score > best_match_score):
                 best_match_score = score
                 best_match_path = path
             i+=1
+        
+        bar.finish()
         print(f"Treated batch {batch_counter}")
         batch_counter += 1
     return best_match_path, best_match_score
