@@ -47,7 +47,7 @@ Lancer l'applcation :
 docker-compose -f docker-compose-app up --build
 ```
 
-2. Accédez à l’application sur : [http://localhost:3000](http://localhost:3000)
+2. Accédez à l’application sur : [http://localhost:3030](http://localhost:3030)
 
 ---
 
