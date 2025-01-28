@@ -2,22 +2,6 @@ import cv2 as cv
 from insightface.app import FaceAnalysis
 import os
 
-def format_number(number: int) -> str:
-    """
-    ### Converts an integer to a conventional string to search for images in celebA DB
-
-    Args:
-        number: The integer to convert
-
-    Returns:
-        formatted_number: Formatted string to according rules
-    """
-
-    # Convert the number to a string with leading zeros if necessary
-    formatted_number = str(number).zfill(6)
-    
-    # Append the "jpg" extension
-    return formatted_number + ".jpg"
 
 def detect_and_draw_faces(input_image_path: str, output_directory: str, output_filename: str = "output.jpg") -> tuple:
     """
@@ -39,11 +23,7 @@ def detect_and_draw_faces(input_image_path: str, output_directory: str, output_f
         return None, None
 
     # Initialisation de l'application InsightFace
-<<<<<<< HEAD
-    app = FaceAnalysis(providers=[ "CPUExecutionProvider"], model = "buffalo_l")
-=======
     app = FaceAnalysis(providers=["CPUExecutionProvider"], model = "buffalo_l")
->>>>>>> AI-test
     app.prepare(ctx_id=0, det_size=(640, 640))
 
     # Détection des visages
