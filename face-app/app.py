@@ -6,7 +6,7 @@ from utils import detect_and_draw_faces, extract_embedding
 from constants import *
 import pickle
 import os
-from progress.bar import Bar
+
 
 
 def initialize_face_analyzer(model:str = 'buffalo_l') -> FaceAnalysis:
@@ -17,7 +17,7 @@ def initialize_face_analyzer(model:str = 'buffalo_l') -> FaceAnalysis:
         model: Name of the model to be used for init (default 'buffalo_l')
     """
     global app
-    face_analyzer = FaceAnalysis(providers=["CUDAExecutionProvider", "CPUExecutionProvider"], model = model)
+    face_analyzer = FaceAnalysis(providers=["CPUExecutionProvider"], model = model)
     face_analyzer.prepare(ctx_id=0, det_size=(640, 640))
 
     app = face_analyzer
@@ -72,11 +72,9 @@ def find_best_match(source_embedding, embedding_folder_path = PREPOC_DIR) -> tup
         # Store the embeddings in a variable
         embeddings_array = np.array(embeddings)
         
-        bar = Bar(f'Processing batch nb {batch_counter}', max=DEFAULT_BATCH_SIZE)
         # Calculate similarity for each embedding
         for i, (embedding, path) in enumerate (zip(embeddings_array, metadata)):
             score = calculate_similarity(source_embedding, embedding)
-            bar.next()
 
             # Find index and score of best matching image
             if(score > best_match_score):
@@ -84,7 +82,6 @@ def find_best_match(source_embedding, embedding_folder_path = PREPOC_DIR) -> tup
                 best_match_path = path
             i+=1
         
-        bar.finish()
         print(f"Treated batch {batch_counter}")
         batch_counter += 1
     return best_match_path, best_match_score
@@ -117,20 +114,20 @@ def visualize_match(image_path1 :str = CELEBA_DIR+"000001.jpg", image_path2 : st
 
     # BGR color channels
     color = (0, 0, 255)
-    text = f"Similarity: {similarity:.2f}"
+    text = f"Similarity: {min((similarity+0.5)*100,100):.0f}%"
     
     cv.putText(result, text, (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, color, 2)
     return result
 
 
-def morph_faces(image_path1 : str, image_path2 : str, model : str ='buffalo_l') -> np.ndarray:
+def morph_faces(image_path1 : str, image_path2 : str, face_analyzer : FaceAnalysis) -> np.ndarray:
     """
-    ### Morph two images using embeddings from InsightFace.
+    ### Morph two faces of images using InsightFace model.
 
     Args:
         image_path1 (str): Path to the first image.
         image_path2 (str): Path to the second image.
-        model (str): The model name to use for InsightFace (default: 'buffalo_l').
+        face_analyzer (FaceAnalysis): FaceAnalysis object of the app
 
     Returns:
         numpy.ndarray: The morphed image as a numpy array.
@@ -144,21 +141,21 @@ def morph_faces(image_path1 : str, image_path2 : str, model : str ='buffalo_l') 
         raise ValueError(f"Failed to load images: {image_path1}, {image_path2}")
     
     # Detect faces in both images
-    faces1 = app.get(img1)
-    faces2 = app.get(img2)
+    faces1 = face_analyzer.get(img1)
+    faces2 = face_analyzer.get(img2)
     
     if not faces1 or not faces2:
         raise ValueError("No faces detected in one or both images.")
     
-    print("probleme ici ?")
-    swapper = insightface.model_zoo.get_model('/root/./insightface/models/inswapper_128.onnx', download = False, download_zip = False)
+    swapper = insightface.model_zoo.get_model('/root/.insightface/models/inswapper_128.onnx', download = False, download_zip = False, providers=["CPUExecutionProvider"])
 
-    print("ou probleme là ?")
     # Image of user
-    source_face = faces1[0]
+    source_face = sorted(faces1, key=lambda x: x.bbox[2] * x.bbox[3], reverse=True)[0]
     # Image of star
-    target_face = faces2[0]
+    target_face = sorted(faces2, key=lambda x: x.bbox[2] * x.bbox[3], reverse=True)[0]
     
+    print(image_path1, "  |  ", image_path2)
+
     morphed_image = img1.copy()
     morphed_image = swapper.get(morphed_image, target_face, source_face, paste_back=True)
 
@@ -175,13 +172,13 @@ def main():
     initialize_face_analyzer()
 
     # Reading source image
-    source_image_path = SAMPLES_DIR+"famille.jpg"
+    source_image_path = SAMPLES_DIR+"romu3.jpeg"
     source_embedding = extract_embedding(source_image_path, app)
 
     detected_faces_img , _= detect_and_draw_faces(source_image_path,OUTPUT_DIR, "detected_faces.jpg")
     cv.imwrite(OUTPUT_DIR+"detected_faces.jpg",detected_faces_img)
 
-    comparing_image_path = SAMPLES_DIR+"Renan1.JPG"
+    comparing_image_path = SAMPLES_DIR+"romu4.jpeg"
     compare_embedding = extract_embedding(comparing_image_path, app)
     compared_images = visualize_match(source_image_path, comparing_image_path, calculate_similarity(source_embedding, compare_embedding))
     cv.imwrite(OUTPUT_DIR+"matching_samples.jpg",compared_images)
@@ -198,9 +195,9 @@ def main():
     print(f"Result saved to /app/{OUTPUT_DIR}best_match.jpg")
 
 
-    # morphed_image = morph_faces(image2_path, image2_path, "buffalo_l")
-    # cv.imwrite(OUTPUT_DIR+morphed_image_name,morphed_image)
-    # print(f"Result saved to /app/{OUTPUT_DIR + morphed_image_name}")
+    morphed_image = morph_faces(source_image_path, matching_image_path, app     )
+    cv.imwrite(OUTPUT_DIR+"morphed.jpg", morphed_image)
+    print(f"Result saved to /app/{OUTPUT_DIR}morphed.jpg")
 
     return 0
 
@@ -208,6 +205,5 @@ def main():
 if __name__ == "__main__":
 
     main()
-
     while True:
-        print("aa")
+        pass

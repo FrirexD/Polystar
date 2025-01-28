@@ -1,6 +1,5 @@
 numpy==1.23.5
 insightface==0.7.3
-onnxruntime-gpu
+onnxruntime
 tqdm==4.64.1
 opencv-python-headless
-progress
