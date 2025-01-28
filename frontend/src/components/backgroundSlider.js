@@ -7,7 +7,7 @@ const BackgroundSlider = () => {
   const [error, setError] = useState(null);
   const [rows, setRows] = useState(1);
 
-  const OMDB_API_KEY = 'YOUR-API-KEY';
+  const OMDB_API_KEY = 'b4833ea3';
 
   const shuffleArray = (array) => {
     const newArray = [...array];

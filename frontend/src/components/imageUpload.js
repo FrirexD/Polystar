@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, X, ImageIcon, Camera } from 'lucide-react';
+import { Upload, X, ImageIcon, Camera, Loader } from 'lucide-react';
 import '../assets/styles/imageUpload.css';
 import { io } from 'socket.io-client';
 
@@ -9,8 +9,10 @@ const ImageUpload = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [image, setImage] = useState(null);
+  const [isVisible, setIsVisible] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
@@ -42,6 +44,10 @@ const ImageUpload = () => {
   const handleFileSelect = (e) => {
     const files = [...e.target.files];
     handleFiles(files);
+  };
+  const handleClose = () => {
+    setIsVisible(false);
+    setImage(null); 
   };
 
   const handleFiles = (files) => {
@@ -128,7 +134,8 @@ const ImageUpload = () => {
   
     const formData = new FormData();
     formData.append('image', selectedFiles[0]); // On prend le premier fichier sélectionné
-  
+    
+    setIsLoading(true);
     try {
       // Envoi du fichier à votre API Flask
       const response = await fetch('http://localhost:5050/upload', {
@@ -148,30 +155,33 @@ const ImageUpload = () => {
   
     } catch (error) {
       console.error('Erreur:', error);
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     socket.on("response", (response) => {
-      if (response.image) {
-        // Afficher l'image
-        const imgElement = document.createElement('img');
-        imgElement.src = response.image;
-        // ou dans un état React :
-        setImage(response.image);
-      }
+        if (response.image) {
+            setImage(response.image);
+            setIsVisible(true);
+            setIsLoading(false);
+        }
     });
-  
-    return () => {
-      socket.off("response");
-    };
-  }, []);
+
+    return () => socket.off("response");
+}, []);
 
   return (
+
     <div className="image-upload-container">
       <h1 className="upload-title">Dépose un photo de toi ici :</h1>
-      
-      {image && <img src={image} alt="Processed" />}
+      {isVisible && (
+        <div id="popup">
+           <button id="close-btn" onClick={handleClose}>✖</button>
+          <h2>Vous ressemblez à Cette Star :</h2>
+          {image && <img src={image} alt="Processed" />}
+        </div>
+      )}
       <div className="center-container">
         {isCapturing ? (
           <div className="camera-container">
@@ -246,8 +256,9 @@ const ImageUpload = () => {
             <button
               className="upload-button"
               onClick={handleSubmit}
+              disabled={isLoading}
             >
-              Télécharger {selectedFiles.length} image{selectedFiles.length > 1 ? 's' : ''}
+              {isLoading ? <Loader className="loader-icon" /> : 'Trouver la star qui se cache en moi !'}
             </button>
           </div>
         )}
