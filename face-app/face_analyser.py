@@ -6,6 +6,7 @@ from utils import detect_and_draw_faces, extract_embedding
 from constants import *
 import pickle
 import os
+from morphing import morph_images
 
 def initialize_face_analyzer(model:str = 'buffalo_l') -> FaceAnalysis:
     """
@@ -112,62 +113,14 @@ def visualize_match(image_path1 :str = CELEBA_DIR+"000001.jpg", image_path2 : st
     result = np.hstack([img1, img2])
 
     # BGR color channels
-    color = (0, 0, 255)
-    text = f"Similarity: {similarity:.2f}"
+    color = (215, 193, 0)
+    text = f"Similarity: {min(100,100*(similarity+0.5)):.0f}%"
     
     cv.putText(result, text, (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, color, 2)
     return result
 
-
-def morph_faces(image_path1 : str, image_path2 : str, model : str ='buffalo_l') -> np.ndarray:
-    """
-    ### Morph two images using embeddings from InsightFace.
-
-    Args:
-        image_path1 (str): Path to the first image.
-        image_path2 (str): Path to the second image.
-        model (str): The model name to use for InsightFace (default: 'buffalo_l').
-
-    Returns:
-        numpy.ndarray: The morphed image as a numpy array.
-    """
-
-    # Load the images
-    img1 = cv.imread(image_path1)
-    img2 = cv.imread(image_path2)
-    
-    if img1 is None or img2 is None:
-        raise ValueError(f"Failed to load images: {image_path1}, {image_path2}")
-    
-    # Detect faces in both images
-    faces1 = app.get(img1)
-    faces2 = app.get(img2)
-    
-    if not faces1 or not faces2:
-        raise ValueError("No faces detected in one or both images.")
-    
-    print("probleme ici ?")
-    swapper = insightface.model_zoo.get_model('/root/./insightface/models/inswapper_128.onnx', download = False, download_zip = False, providers = ["CPUExecutionProvider"])
-
-    print("ou probleme là ?")
-    # Image of user
-    source_face = faces1[0]
-    # Image of star
-    target_face = faces2[0]
-    
-    morphed_image = img1.copy()
-    morphed_image = swapper.get(morphed_image, target_face, source_face, paste_back=True)
-
-    return morphed_image
-
     
 def main(source_image_path):
-    try:
-        print(f"Insight version : {insightface.__version__}")
-        print(f"Numpy version : {np.__version__}")
-    except Exception as e:
-        print(f"An error has occured : {e}")
-
     # Initialize the app
     initialize_face_analyzer()
 
@@ -195,16 +148,8 @@ def main(source_image_path):
     print(f"Result saved to /app/{OUTPUT_DIR}best_match.jpg")
 
 
-    # morphed_image = morph_faces(image2_path, image2_path, "buffalo_l")
-    # cv.imwrite(OUTPUT_DIR+morphed_image_name,morphed_image)
-    # print(f"Result saved to /app/{OUTPUT_DIR + morphed_image_name}")
+    # morphed_image = morph_images(source_image_path, matching_image_path, 0.5, app)
+    # cv.imwrite(OUTPUT_DIR+"morphed.jpg", morphed_image)
+    # print(f"Result saved to /app/{OUTPUT_DIR }morphed.jpg")
     
     return result
-
-# Example usage
-if __name__ == "__main__":
-
-    main()
-
-    while True:
-        print("aa")
