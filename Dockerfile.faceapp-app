@@ -34,7 +34,6 @@ COPY data/celebA /app/data/celebA
 COPY data/preprocessed /app/data/preprocessed
 COPY data/output /app/data/output
 COPY data/samples /app/data/samples
-COPY data/samples /app/data/tmp
 
 # Copier les fichiers des modèles
 COPY face-app/models/inswapper_128.onnx /root/.insightface/models/inswapper_128.onnx
