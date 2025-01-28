@@ -39,7 +39,7 @@ def detect_and_draw_faces(input_image_path: str, output_directory: str, output_f
         return None, None
 
     # Initialisation de l'application InsightFace
-    app = FaceAnalysis()
+    app = FaceAnalysis(providers=[ "CPUExecutionProvider"], model = "buffalo_l")
     app.prepare(ctx_id=0, det_size=(640, 640))
 
     # Détection des visages

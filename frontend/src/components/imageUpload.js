@@ -1,12 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, X, ImageIcon, Camera } from 'lucide-react';
 import '../assets/styles/imageUpload.css';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5050');
 
 const ImageUpload = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState('');
   const [isCapturing, setIsCapturing] = useState(false);
+  const [image, setImage] = useState(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
@@ -116,13 +120,58 @@ const ImageUpload = () => {
     stopCamera();
   };
 
-  const handleSubmit = () => {
-    console.log('Files to upload:', selectedFiles);
+  const handleSubmit = async () => {
+    if (!selectedFiles || selectedFiles.length === 0) {
+      console.log('Aucun fichier sélectionné');
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('image', selectedFiles[0]); // On prend le premier fichier sélectionné
+  
+    try {
+      // Envoi du fichier à votre API Flask
+      const response = await fetch('http://localhost:5050/upload', {
+        method: 'POST',
+        body: formData
+      });
+  
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'upload');
+      }
+  
+      const data = await response.json();
+      
+      // Une fois l'image enregistrée, on peut émettre l'événement socket
+      // avec le chemin retourné par l'API
+      socket.emit('process_image', { path: data.path });
+  
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
   };
+
+  useEffect(() => {
+    socket.on("response", (response) => {
+      if (response.image) {
+        // Afficher l'image
+        const imgElement = document.createElement('img');
+        imgElement.src = response.image;
+        // ou dans un état React :
+        setImage(response.image);
+      }
+    });
+  
+    return () => {
+      socket.off("response");
+    };
+  }, []);
 
   return (
     <div className="image-upload-container">
       <h1 className="upload-title">Dépose un photo de toi ici :</h1>
+      
+      {image && <img src={image} alt="Processed" />}
       <div className="center-container">
         {isCapturing ? (
           <div className="camera-container">
@@ -136,6 +185,7 @@ const ImageUpload = () => {
               <button onClick={capturePhoto} className="capture-button">
                 Prendre la photo
               </button>
+              
               <button onClick={stopCamera} className="cancel-button">
                 Annuler
               </button>

@@ -43,7 +43,7 @@ COPY face-app/models/inswapper_128.onnx /root/.insightface/models/inswapper_128.
 RUN chmod -R 777 /app/data/
 
 # Exposer les ports ou commandes nécessaires
-EXPOSE 6000
+EXPOSE 5050
 
 # Commande par défaut pour démarrer l'application Python
 CMD ["python3", "app.py"]
