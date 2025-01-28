@@ -16,6 +16,7 @@ PolyStar est une application web interactive permettant aux utilisateurs de se p
 ## Technologies Utilisées
 ### Backend
 - **Python** avec **Flask** pour la gestion des API et du backend.
+- [**InsightFace**](https://insightface.ai) une librairie de reconnaissance faciale open-source
 
 ### Frontend
 - **React.js** pour l’interface utilisateur dynamique.
@@ -53,5 +54,5 @@ docker-compose -f docker-compose-app up --build
 ## Utilisation
 - Chargez une photo ou prenez une photo via la caméra.
 - Cliquez sur le bouton pour analyser l'image.
-- L'application affiche la célébrité la plus proche et une image fusionnée.
+- L'application affiche la célébrité qui vous ressemble le plus avec son score à côté de vous
 

@@ -1,7 +1,7 @@
 numpy==1.23.5
 insightface==0.7.3
 onnxruntime
-tqdm==4.64.1
+cors
 opencv-python-headless
 flask
 requests
