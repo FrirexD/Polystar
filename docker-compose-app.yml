@@ -1,0 +1,27 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3030:80"
+    restart: "always"
+
+  face-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.faceapp-app
+    volumes:
+      - ./data/celebA:/app/data/celebA
+      - ./data/output:/app/data/output
+      - ./data/samples:/app/data/samples
+      - ./data/preprocessed:/app/data/preprocessed
+      - ./face-app/models:/root/.insightface/models  # Volume pour persister le modèle téléchargé dans face-app/models
+    ports:
+      - "5050:5050"
+    restart: "no"
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]

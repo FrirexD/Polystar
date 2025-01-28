@@ -1,0 +1,46 @@
+.center-container {
+    position: relative; /* Ajout de position relative */
+    z-index: 20; /* Z-index plus élevé que le background */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: transparent; /* Changé pour transparent */
+    padding: 1rem;
+}
+
+.drop-zone {
+    border: 2px dashed #ffffff; /* Changé pour blanc */
+    border-color: rgba(255, 255, 255, 0.3); /* Bordure semi-transparente */
+    background-color: rgba(0, 0, 0, 0.3); /* Fond semi-transparent */
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    transition: border-color 0.3s, background-color 0.3s;
+    backdrop-filter: blur(8px); /* Effet de flou */
+}
+
+.drop-zone.dragging {
+    border-color: #3b82f6;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Adaptation des couleurs pour un thème sombre */
+.file-item {
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.file-item .file-size {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.file-item .remove-button {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.file-item .remove-button:hover {
+    color: #ef4444;
+}

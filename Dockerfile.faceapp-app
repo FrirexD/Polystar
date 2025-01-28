@@ -1,0 +1,48 @@
+# Utiliser une image de base avec CUDA et cuDNN
+FROM nvidia/cuda:11.3.1-cudnn8-runtime-ubuntu20.04
+
+# Installer les outils système nécessaires pour les dépendances Python
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libgl1 \
+    libglib2.0-0 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Installer Python et pip
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Vérifier l'installation de Python 3
+RUN python3 --version
+
+# Définir le dossier de travail
+WORKDIR /app
+
+# Copier le fichier requirements.txt spécifique à faceapp
+COPY face-app/requirements.txt .
+
+# Installer les dépendances Python
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Copier le reste des fichiers de l'application faceapp
+COPY face-app/ .
+
+# Copier les fichiers de data (celebA et output et preprocess)
+COPY data/celebA /app/data/celebA
+COPY data/preprocessed /app/data/preprocessed
+COPY data/output /app/data/output
+COPY data/samples /app/data/samples
+
+# Copier les fichiers des modèles
+COPY face-app/models/inswapper_128.onnx /root/.insightface/models/inswapper_128.onnx
+
+# Assurer les droits d'écriture pour les données
+RUN chmod -R 777 /app/data/
+
+# Exposer les ports ou commandes nécessaires
+EXPOSE 5050
+
+# Commande par défaut pour démarrer l'application Python
+CMD ["python3", "app.py"]
